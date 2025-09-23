@@ -1,7 +1,12 @@
 #!/bin/bash
 
-rm *.mod
-rm -r objects/
+if [[ -f "*.mod" ]]; then
+    rm *.mod
+fi
+
+if [[ -f *genmod* ]]; then
+    rm *genmod*
+fi
 
 h5pfc -O3 -qopenmp -o drex_m     \
     precision.f90        \
@@ -23,11 +28,8 @@ h5pfc -O3 -qopenmp -o drex_m     \
     ../shared_funct/dsyevc3.f \
     ../shared_funct/dsyevh3.f \
     ../shared_funct/dsyevq3.f \
-    ../shared_funct/dsytrd3.f	      
-    
-if [ ! -s objects/ ];then \
-	mkdir objects/;\
-fi;
-    
-mv *.o objects/
+    ../shared_funct/dsytrd3.f > compile.log 2>&1
 
+if [[ $? -eq 0 ]]; then
+    echo "Successfully compiled $(basename $PWD)"
+fi
