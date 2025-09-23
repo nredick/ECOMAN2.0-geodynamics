@@ -45,12 +45,9 @@
    SUBROUTINE read_input_file(input_dir,output_dir)
 
    USE comvar
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    INTEGER :: i
    CHARACTER (len=500) :: input_dir,output_dir

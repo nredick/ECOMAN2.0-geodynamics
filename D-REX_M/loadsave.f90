@@ -50,20 +50,17 @@
 
    USE comvar
    use omp_lib
-   USE hdf5   
+   USE hdf5
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    INTEGER :: i1,i2,i3,i4,t,yy
 !  INTEGER :: n1,n2,n3,nx(3) ! unused
    CHARACTER (4) :: dt_str4
    CHARACTER (500) :: filename,str
    CHARACTER (len=*) :: input_dir
-   CHARACTER (len(trim(input_dir))) :: str1  
+   CHARACTER (len(trim(input_dir))) :: str1
    DOUBLE PRECISION, DIMENSION(2,2) :: Adummy2,dV2
    DOUBLE PRECISION, DIMENSION(3,3) :: Adummy,dV
    DOUBLE PRECISION :: datadb(2),lr,rr,cr,x2y2,x2z2,xx,yyy,zz,Uxx(3)

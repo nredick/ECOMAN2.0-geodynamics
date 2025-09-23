@@ -344,12 +344,9 @@
 
    USE comvar
    USE omp_lib
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    CHARACTER (500) :: input_dir
    INTEGER :: m,ncyc,ncyc1,t,ndt !! loop counters
@@ -646,12 +643,9 @@
 
    USE comvar
    USE omp_lib
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    INTEGER :: i1,i2,m,tid
    DOUBLE PRECISION :: wtime,fractdisl
@@ -763,12 +757,9 @@
 
    USE comvar
    USE omp_lib
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    INTEGER :: i1,i2,i3,m,tid
    DOUBLE PRECISION :: wtime,fractdisl

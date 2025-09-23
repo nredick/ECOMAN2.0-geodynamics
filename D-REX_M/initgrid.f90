@@ -612,21 +612,18 @@
    RETURN
 
    END SUBROUTINE init0
-   
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   SUBROUTINE set_fossil_fabric 
+   SUBROUTINE set_fossil_fabric
 
    USE comvar
    USE omp_lib
-   USE hdf5    
+   USE hdf5
+   USE mpi
 
    IMPLICIT NONE
-
-   !M3E!!!!!!!!!!!!
-   include 'mpif.h'
-   !M3E!!!!!!!!!!!!
 
    INTEGER :: m,nx(3),sbfmod0,size0
    DOUBLE PRECISION :: lr,rr,cr
