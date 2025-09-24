@@ -1,12 +1,11 @@
 #!/bin/bash
 
-if [[ -f "*.mod" ]]; then
-    rm *.mod
-fi
+# for systems that use Environment modules (module names will vary)
+module load hdf5/1.14.5%oneapi@2025.0.0
+module load openmpi/5.0.5%oneapi@2025.0.0
 
-if [[ -f *genmod* ]]; then
-    rm *genmod*
-fi
+rm *.mod
+rm -r objects/
 
 h5pfc -O3 -qopenmp -o drex_m     \
     precision.f90        \
