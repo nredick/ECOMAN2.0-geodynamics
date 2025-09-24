@@ -465,7 +465,7 @@
 
          CALL gradientcalc2D(tid,mx1(m),mx2(m),i1,i2)
          IF(epsnot(tid) == 0) THEN
-             write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
+             ! write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
              GOTO 50
          END IF
 
@@ -534,7 +534,7 @@
 
          CALL gradientcalc(tid,mx1(m),mx2(m),mx3(m),i1,i2,i3,mYY(m))
          IF(epsnot(tid) == 0) THEN
-             write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
+             ! write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
              GOTO 60
          END IF
 
@@ -685,7 +685,7 @@
 
          CALL gradientcalc2D(tid,mx1(m),mx2(m),i1,i2)
          IF(epsnot(tid) == 0) THEN
-             write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
+             ! write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
              GOTO 50
          END IF
 
@@ -799,7 +799,7 @@
 
          CALL gradientcalc(tid,mx1(m),mx2(m),mx3(m),i1,i2,i3,mYY(m))
          IF(epsnot(tid) == 0) THEN
-             write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
+             ! write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
              GOTO 50
          END IF
 
@@ -860,4 +860,3 @@
    RETURN
 
    END SUBROUTINE forwardLPOadvection3D
-
