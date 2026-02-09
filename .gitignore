@@ -8,6 +8,7 @@ cookbooks/**/out/*
 *genmod*
 *.mod
 *.log
+**/ECOMAN2.0-geodynamics/compile_ECOMAN2.0-geodynamics/
 
 # D-REX_M - compilation/run files 
 D-REX_M/cycle.txt
