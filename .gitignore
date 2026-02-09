@@ -1,4 +1,17 @@
 .DS_store
 .DS_store?
 
+# test files
+cookbooks/**/out/*
+
+# compilation files
+*genmod*
 *.mod
+*.log
+
+# D-REX_M - compilation/run files 
+D-REX_M/cycle.txt
+D-REX_M/drex_m
+
+# VIZTOMO - compilation/run files 
+VIZTOMO/viztomo
