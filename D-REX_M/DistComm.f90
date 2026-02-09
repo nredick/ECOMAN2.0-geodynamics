@@ -62,10 +62,9 @@
 module class_DistComm
 
 use class_precision
+use mpi
 
 implicit none
-
-include 'mpif.h'
 
 ! private variables
 integer, parameter, private :: tagList  = 0 
