@@ -117,6 +117,11 @@
 
    if ( rankMPI .eq. 1 ) then
       write(*,'(a,i0)') ' CALCULATE LPO FOR FILE NUMBER ',t
+      write(*,'(a,a)') ' Input directory: ',trim(input_dir)
+      write(*,'(a,3i0)') ' Grid dimensions: ',nx1,nx2,nx3
+      write(*,'(a,1es13.6)') ' Max velocity component 1: ',MAXVAL(ABS(Ui(:,1,:,:,:)))
+      write(*,'(a,1es13.6)') ' Max velocity component 2: ',MAXVAL(ABS(Ui(:,2,:,:,:)))
+      if(dimensions == 3) write(*,'(a,1es13.6)') ' Max velocity component 3: ',MAXVAL(ABS(Ui(:,3,:,:,:)))
       write(*,*)
    endif
 
