@@ -1,13 +1,25 @@
 #!/bin/bash
 
-# for systems that use Environment modules (module names will vary)
+# updated 07/2025 from bash_compile_billen for HIVE
+
 module load hdf5/1.14.5%oneapi@2025.0.0
 module load openmpi/5.0.5%oneapi@2025.0.0
 
-rm *.mod
-rm -r objects/
+if [[ -f "*.mod" ]]; then
+    rm *.mod
+fi
 
-h5pfc -O3 -qopenmp -o drex_m     \
+if [[ -f *genmod* ]]; then
+    rm *genmod*
+fi
+
+# h5pfc -O0 -qopenmp -o drex_m     \
+# h5pfc -O3 -qopenmp -gen-interfaces -g -traceback -CB -ftrapuv -o drex_m \
+# h5pfc -g -O0 -traceback -check all -warn all -ftrapuv *.f90 \
+# h5pfc -O2 -qopenmp -v -o drex_m \
+# h5pfc -g -O0 -traceback -check bounds -warn all *.f90 \
+# h5pfc -g -O0 -qopenmp -traceback -check bounds,uninit,pointer -warn all *.f90 -o drex_m     \
+h5pfc -O0 -qopenmp -o drex_m     \
     precision.f90        \
     DistComm.f90         \
     DistGrid.F90         \
