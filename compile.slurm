@@ -20,7 +20,9 @@
 # load modules
 module load hdf5/1.14.5%oneapi@2025.0.0
 module load openmpi/5.0.5%oneapi@2025.0.0
-module load gcc/13.2.0 pmix ucx     # added 2026.02.09 for compatibility with changes to openmpi
+module load pmix/5.0.3%oneapi@2025.0.0 ucx/1.17.0%oneapi@2025.0.0 intel-oneapi-mkl/2024.0.0%oneapi@2025.0.0     # added 2026.02.09 for compatibility with changes to openmpi
+
+# module load openmpi hdf5
 
 ### COMPILE D-REX_M
 
