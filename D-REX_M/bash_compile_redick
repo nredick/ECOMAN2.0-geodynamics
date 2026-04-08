@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# set -euxo pipefail
+
+
 if [[ -f "*.mod" ]]; then
     rm *.mod
 fi
@@ -40,5 +43,6 @@ if [[ $? -eq 0 ]]; then
     echo "Successfully compiled $(basename $PWD)"
     exit 0
 else 
+    echo "Failed to compile $(basename $PWD)"
     exit 1
 fi
