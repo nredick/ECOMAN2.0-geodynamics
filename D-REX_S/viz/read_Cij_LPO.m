@@ -49,7 +49,7 @@ strain=min_strain:stp_strain:max_strain;
 strainnum = int16((max_strain-min_strain)/stp_strain+1);
 
 if ~exist(output_dir,'dir')
-    system(['mkdir ',output_dir]);
+    system(['mkdir -p ',output_dir]);
 end
 %system(['cd ',curdir]);
 if plot_Phase1LPO

@@ -16,7 +16,7 @@ h5pfc -qopenmp -o vizvisc    \
 	../shared_funct/dsytrd3.f	      
 
 if [ ! -s objects/ ];then \
-	mkdir objects/;\
+	mkdir -p objects/;\
 fi;
 	 
 mv *.o objects/

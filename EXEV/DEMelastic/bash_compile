@@ -6,7 +6,7 @@ h5pfc -O3 -qopenmp -o demelastic     \
     ../../shared_funct/inverse.f90
 
 if [ ! -s objects/ ];then \
-        mkdir objects/;\
+        mkdir -p objects/;\
 fi;
 
 mv *.o objects/
