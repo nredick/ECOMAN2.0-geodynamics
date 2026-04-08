@@ -231,7 +231,7 @@
   
    !Create ouput directory
    if ( rankMPI .eq. 1) then 
-      str='mkdir '//trim(output_dir)
+      str='mkdir -p '//trim(output_dir)
       CALL SYSTEM(str)
    endif
 
@@ -591,13 +591,13 @@
 
    if ( rankMPI .eq. 1 ) then
       write(*,*)
-      write(*,'(a,1f6.2,a)') ' Memory needed for nodes is ',memnodes*8*sizeMPI/1d9,' GB'
+      write(*,'(a,1f12.2,a)') ' Memory needed for nodes is ',memnodes*8*sizeMPI/1d9,' GB'
   
       write(*,*)
-      write(*,'(a,1f6.2,a)') ' Memory needed for aggregates is ',((memmark-1)*8+1)*sizeMPI/1d9,' GB'
+      write(*,'(a,1f12.2,a)') ' Memory needed for aggregates is ',((memmark-1)*8+1)*sizeMPI/1d9,' GB'
       ! Add 5% to account for other variables declared
       write(*,*)
-      write(*,'(a,1f6.2,a)') ' Total memory needed is about ',((memnodes+memmark)*8*sizeMPI/1d9)*1.05d0, ' GB'
+      write(*,'(a,1f12.2,a)') ' Total memory needed is about ',((memnodes+memmark)*8*sizeMPI/1d9)*1.05d0, ' GB'
       write(*,*)
    endif
 
@@ -816,4 +816,3 @@
    END IF
 
    END SUBROUTINE rottensor
-

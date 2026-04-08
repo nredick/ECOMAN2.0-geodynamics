@@ -107,7 +107,7 @@
    call read_par_int(15,Tstep)
    call read_par_int(15,Tend)
    call read_par_int(15,OutputStep)
-   call read_par_double(15,timemax)
+   call read_par_double(15,Timemax)
    !call read_par_double(15,strainmax)
    strainmax = 5.0d1
    if ( rankMPI .eq. 1 ) then
@@ -116,9 +116,9 @@
       write(*,"(a,i5)") ' Tend  :      ',Tend
       write(*,"(a,i5)") ' OutputStep : ',OutputStep
       write(*,*)
-      if(Tinit == Tend) write(*,"(a,f6.2,a)")  ' Tinit = Tend --> steady-state flow for ',Timemax,' Myr'
+      if(Tinit == Tend) write(*,"(a,f20.4,a)")  ' Tinit = Tend --> steady-state flow for ',Timemax,' seconds'
       write(*,*)
-      write(*,"(a,i5)") ' Max. strain : ',strainmax
+      write(*,"(a,f6.2)") ' Max. strain : ',strainmax
       write(*,*)
       write(*,"(a)") '--------------------------------------------------------'
       write(*,*)
