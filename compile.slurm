@@ -17,12 +17,13 @@
 ### this script compiles the D-REX_M and VIZTOMO codes in ECOMAN2.0-geodynamics ###
 ###################################################################################
 
-# load modules
-module load hdf5/1.14.5%oneapi@2025.0.0
-module load openmpi/5.0.5%oneapi@2025.0.0
-module load pmix/5.0.3%oneapi@2025.0.0 ucx/1.17.0%oneapi@2025.0.0 intel-oneapi-mkl/2024.0.0%oneapi@2025.0.0     # added 2026.02.09 for compatibility with changes to openmpi
+# set -euxo pipefail
 
-# module load openmpi hdf5
+module list
+
+module load oneapi/2025.0.0 hdf5/1.14.5%oneapi@2025.0.0 pmix/5.0.3%oneapi@2025.0.0
+
+echo 
 
 ### COMPILE D-REX_M
 
@@ -37,5 +38,3 @@ srun bash_compile_redick
 cd ../VIZTOMO
 
 srun bash_compile_redick
-
-exit 0 
