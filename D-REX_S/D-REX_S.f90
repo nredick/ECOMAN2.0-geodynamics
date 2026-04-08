@@ -404,7 +404,7 @@
  
    END IF
 
-   str='mkdir '//trim(output_name)
+   str='mkdir -p '//trim(output_name)
    CALL system(str)
    str='mv '//trim(output_name)//'*.h5 '//trim(output_name)
    CALL system(str)
@@ -840,4 +840,3 @@
    RETURN
 
    END SUBROUTINE tensorrot_aggr
-

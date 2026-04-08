@@ -385,7 +385,7 @@ IF(spomod > 0) THEN
    IF(spomod > 1 .AND. meltspomod > 0) DEALLOCATE(meltmark)
 
    !!! Write infos in hdf5 format for SKS splitting modeling
-   command = 'mkdir '//str2//'SPO/'
+   command = 'mkdir -p '//str2//'SPO/'
    CALL SYSTEM(command)
    filename = str2//'SPO/Cijkl'//dt_str4//'.h5'
 

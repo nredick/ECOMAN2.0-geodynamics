@@ -71,7 +71,7 @@
    call read_par_char(15,output_dir); write(*,"(a,a)"),' Output directory: ',trim(output_dir)
    write(*,*)
 
-   command = 'mkdir '//trim(output_dir)
+   command = 'mkdir -p '//trim(output_dir)
    CALL SYSTEM(command)
    write(*,*)
    write(*,"(a)"),'--------------------------------------------------------'
