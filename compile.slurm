@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=high
-#SBATCH --mem=512G                          # to use magali's nodes
+#SBATCH --mem=1G
 #SBATCH --constraint='zen|zen2|zen3'        # do not run or compile on zen4 nodes
 #SBATCH --account=billengrp
 #SBATCH --mail-type=end
