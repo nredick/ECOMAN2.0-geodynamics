@@ -357,6 +357,11 @@
    INTEGER :: m,ncyc,ncyc1,t,ndt !! loop counters
    INTEGER :: tid,i1,i2,i3,numstrainmax
    DOUBLE PRECISION :: wtime0,wtime1,wtime2,timeback,fractdisl
+
+!!! for reporting strain evolution during cycles
+   DOUBLE PRECISION :: max_strain_val,avg_strain_val  
+   INTEGER :: nonzero_count  
+
    !M3E!!!!!!!!!!!!!!!!!!!!!
    integer :: rankMPI,errMPI
    !M3E!!!!!!!!!!!!!!!!!!!!!
@@ -470,7 +475,7 @@
 
          CALL gradientcalc2D(tid,mx1(m),mx2(m),i1,i2)
          IF(epsnot(tid) == 0) THEN
-             ! write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
+             write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
              GOTO 50
          END IF
 
@@ -539,7 +544,7 @@
 
          CALL gradientcalc(tid,mx1(m),mx2(m),mx3(m),i1,i2,i3,mYY(m))
          IF(epsnot(tid) == 0) THEN
-             ! write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
+             write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
              GOTO 60
          END IF
 
@@ -594,15 +599,41 @@
       write(*,*)
    endif
 
-!!! Check number of markers with max_strain >= strainmax 
-   numstrainmax = 0
-   DO m = 1 , marknum
-      IF(max_strain(m) >= strainmax) numstrainmax = numstrainmax + 1
-   END DO
+! !!! Check number of markers with max_strain >= strainmax 
+!    numstrainmax = 0
+!    DO m = 1 , marknum
+!       IF(max_strain(m) >= strainmax) numstrainmax = numstrainmax + 1
+!    END DO
 
-   if ( rankMPI .eq. 1 ) then
-      write(*,'(a,1i)') '    Number of aggregates that have reached strainmax = ',numstrainmax
-      write(*,*)
+!    if ( rankMPI .eq. 1 ) then
+!       write(*,'(a,1i)') '    Number of aggregates that have reached strainmax = ',numstrainmax
+!       write(*,*)
+!    endif
+
+!    IF(numstrainmax == marknum) THEN
+!       Tinit = t
+!       GOTO 90
+!    END IF
+
+!!! Check number of markers with max_strain >= strainmax     
+   numstrainmax = 0    
+   DO m = 1 , marknum    
+      IF(max_strain(m) >= strainmax) numstrainmax = numstrainmax + 1    
+   END DO  
+   
+   if ( rankMPI .eq. 1 ) then  
+      write(*,'(a,1i)') '    Number of aggregates that have reached strainmax = ', &  
+                        numstrainmax  
+   
+      write(*,'(a,f6.2,a)') '    Percentage of aggregates at strainmax = ', &  
+                              DBLE(numstrainmax) / DBLE(marknum) * 100.0d0, ' %'  
+   
+      max_strain_val = MAXVAL(max_strain(1:marknum))  
+      avg_strain_val = SUM(max_strain(1:marknum)) / DBLE(marknum)  
+   
+      write(*,'(a,1es13.6)') '    Maximum strain reached = ', max_strain_val  
+      write(*,'(a,1es13.6)') '    Average strain reached = ', avg_strain_val  
+      write(*,*)  
    endif
 
    IF(numstrainmax == marknum) THEN
@@ -690,7 +721,7 @@
 
          CALL gradientcalc2D(tid,mx1(m),mx2(m),i1,i2)
          IF(epsnot(tid) == 0) THEN
-             ! write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
+             write(*,'(a,i10,2f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m)
              GOTO 50
          END IF
 
@@ -804,7 +835,7 @@
 
          CALL gradientcalc(tid,mx1(m),mx2(m),mx3(m),i1,i2,i3,mYY(m))
          IF(epsnot(tid) == 0) THEN
-             ! write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
+             write(*,'(a,i10,3f10.3)') ' No strain rate for marker ',m,mx1(m),mx2(m),mx3(m)
              GOTO 50
          END IF
 
