@@ -340,6 +340,58 @@
    RETURN
  
    END SUBROUTINE rocktypecheck
+
+!    SUBROUTINE rocktypecheck(m)  
+  
+!    USE comvar  
+!    USE omp_lib  
+
+!    USE mpi
+   
+!    IMPLICIT NONE  
+   
+!    INTEGER :: m, i, rankMPI, errMPI  
+!    DOUBLE PRECISION :: mtk,mpgpa  
+   
+!    ! Get MPI rank (variables should be available from comvar)  
+!    call MPI_COMM_RANK(MPI_COMM_WORLD,rankMPI,errMPI)  
+!    rankMPI = rankMPI + 1
+   
+!    ! Debug output - remove all filtering to see if subroutine is called  
+!    write(*,'(a,i0,a,i0,a,f12.1)') 'DEBUG rocktypecheck: m=',m,' rank=',rankMPI,' mx2=',mx2(m)  
+!    write(*,'(a,i0)') 'DEBUG ptmod=',ptmod  
+   
+!    IF(ptmod == 2) THEN  
+!       write(*,'(a)') 'DEBUG: Using density-based assignment'  
+!       CALL rhopt(m,mtk,mpgpa)  
+!       ! ... existing density logic ...  
+!    ELSE  
+!       write(*,'(a)') 'DEBUG: Using minx2/maxx2 bounds'  
+!       DO i = 1, 4  
+!          write(*,'(a,i0,a,2f12.1)') '  Current rocktype ',i,': bounds=',minx2(i),maxx2(i)  
+!       END DO  
+      
+!       ! Assign rocktype  
+!       IF(mx2(m) > minx2(1) .AND. mx2(m) <= maxx2(1)) THEN  
+!          write(*,'(a,i0)') 'DEBUG: Assigned rocktype 1 (Upper mantle)'  
+!          rocktype(m) = 1  
+!       ELSE IF(mx2(m) > minx2(2) .AND. mx2(m) <= maxx2(2)) THEN  
+!          write(*,'(a,i0)') 'DEBUG: Assigned rocktype 2 (Transition zone)'  
+!          rocktype(m) = 2  
+!       ELSE IF(mx2(m) > minx2(3) .AND. mx2(m) <= maxx2(3)) THEN  
+!          write(*,'(a,i0)') 'DEBUG: Assigned rocktype 3 (Transition zone)'  
+!          rocktype(m) = 3  
+!       ELSE IF(mx2(m) > minx2(4) .AND. mx2(m) <= maxx2(4)) THEN  
+!          write(*,'(a,i0)') 'DEBUG: Assigned rocktype 4 (Lower mantle)'  
+!          rocktype(m) = 4  
+!       ELSE  
+!          write(*,'(a,i0)') 'DEBUG: No rocktype matched!'  
+!       END IF  
+!       write(*,*)
+!    END IF  
+   
+!    RETURN  
+!    END SUBROUTINE rocktypecheck
    
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!! Advect backward in time aggregates
@@ -359,8 +411,20 @@
    DOUBLE PRECISION :: wtime0,wtime1,wtime2,timeback,fractdisl
 
 !!! for reporting strain evolution during cycles
-   DOUBLE PRECISION :: max_strain_val,avg_strain_val  
    INTEGER :: nonzero_count  
+
+!!! for reporting rocktype experiencing strain
+   INTEGER, ALLOCATABLE :: rocktype_at_strainmax(:)
+   INTEGER :: numstrainmax_bylayer(0:5)  
+   INTEGER :: count_bylayer(0:5)  
+   DOUBLE PRECISION :: sum_strain_bylayer(0:5), max_strain_bylayer(0:5)  
+
+!!! MPI-global reporting variables
+   INTEGER :: count_bylayer_global(0:5)
+   DOUBLE PRECISION :: sum_strain_bylayer_global(0:5), max_strain_bylayer_global(0:5)
+   INTEGER :: numstrainmax_global, marknum_global
+   DOUBLE PRECISION :: max_strain_val_local, max_strain_val_global
+   DOUBLE PRECISION :: avg_strain_val_local, avg_strain_val_global
 
    !M3E!!!!!!!!!!!!!!!!!!!!!
    integer :: rankMPI,errMPI
@@ -390,6 +454,10 @@
    !Reset cumulated strain and time
    max_strain = 0.0; time_max_strain = 0.0
 
+   ! *** NEW: allocate and initialise rocktype_at_strainmax  
+   ALLOCATE(rocktype_at_strainmax(marknum))  
+   rocktype_at_strainmax = 0  
+
    !Main loop
    DO t = Tend, Tinit , -Tstep 
 
@@ -404,7 +472,6 @@
    ELSE
       !Initialize backward time
       IF(t==Tend) timeback=timesum
-      !timeback = timesum
    END IF
 
    if ( rankMPI .eq. 1 ) then
@@ -447,7 +514,6 @@
       endif
    END IF
 
-
    dt = -dt !Reverse time for backward advection
 
    ! 2D model
@@ -455,7 +521,7 @@
 
    !$omp parallel do & 
    !$omp schedule(guided,8) &
-   !$omp shared(mx1,mx2,X1,X2,Dij,Fd,Fij,e,l,epsnot,odf,odf_ens,acs,acs_ens,rocktype,rho,fractdislrock,max_strain,time_max_strain) &
+   !$omp shared(mx1,mx2,X1,X2,Dij,Fd,Fij,e,l,epsnot,odf,odf_ens,acs,acs_ens,rocktype,rho,fractdislrock,max_strain,time_max_strain,rocktype_at_strainmax) &
    !$omp private(tid,m,i1,i2,fractdisl) &    
    !$omp firstprivate(marknum,dt,size,size3,alt,lambda,Xol,Mob,chi,tau,stressexp,acs0,strainmax) &
    !$omp firstprivate(fsemod,fractdislmod,uppermantlemod,x1min,x2min,x1max,x2max,nx1,nx2)
@@ -488,7 +554,10 @@
 !!! Update cumulative disl. creep strain and check if higher than threshold strain max
       
          max_strain(m) = max_strain(m) - dt*epsnot(tid)*fractdisl
-         IF(max_strain(m) >= strainmax) time_max_strain(m) = timeback
+         IF(max_strain(m) >= strainmax) THEN  
+            time_max_strain(m) = timeback  
+            IF(rocktype_at_strainmax(m) == 0) rocktype_at_strainmax(m) = rocktype(m)  
+         END IF  
 
 50    END IF
 
@@ -498,7 +567,7 @@
 !!! Advection of tracers
    !$omp parallel do &
    !$omp schedule(guided,8) &
-   !$omp shared(mx1,mx2,mYY,X1,X2,Ui,Tk,Pa,Fij,odf,odf_ens,acs0,acs,acs_ens,rocktype,rho,td_rho,max_strain) &
+   !$omp shared(mx1,mx2,mx3,mYY,X1,X2,X3,Dij,Ui,Fd,epsnot,rocktype,max_strain,time_max_strain,rocktype_at_strainmax) &
    !$omp private(m) &
    !$omp firstprivate(marknum,dt,size,size3,fabrictransformmod,ptmod,cartspher,Xol,minx2,maxx2,strainmax) &
    !$omp firstprivate(invdepthaxis,nx1,nx2,x1min,x2min,x1max,x2max,x1periodic,x2periodic)
@@ -524,7 +593,7 @@
 
    !$omp parallel do & 
    !$omp schedule(guided,8) &
-   !$omp shared(mx1,mx2,mx3,mYY,X1,X2,X3,Dij,Ui,Fd,epsnot,rocktype,max_strain,time_max_strain) &
+   !$omp shared(mx1,mx2,mx3,mYY,X1,X2,X3,Dij,Ui,Fd,epsnot,rocktype,max_strain,time_max_strain,rocktype_at_strainmax) &
    !$omp private(tid,m,i1,i2,i3,fractdisl) &    
    !$omp firstprivate(marknum,dt,strainmax) &
    !$omp firstprivate(fsemod,fractdislmod,uppermantlemod,x1min,x2min,x3min,x1max,x2max,x3max,nx1,nx2,nx3)
@@ -557,7 +626,10 @@
 !!! Update cumulative disl. creep strain and check if higher than threshold strain max
       
          max_strain(m) = max_strain(m) - dt*epsnot(tid)*fractdisl
-         IF(max_strain(m) >= strainmax) time_max_strain(m) = timeback
+         IF(max_strain(m) >= strainmax) THEN  
+            time_max_strain(m) = timeback  
+            IF(rocktype_at_strainmax(m) == 0) rocktype_at_strainmax(m) = rocktype(m)  
+         END IF  
 
 60    END IF
 
@@ -599,47 +671,71 @@
       write(*,*)
    endif
 
-! !!! Check number of markers with max_strain >= strainmax 
-!    numstrainmax = 0
-!    DO m = 1 , marknum
-!       IF(max_strain(m) >= strainmax) numstrainmax = numstrainmax + 1
-!    END DO
+!!! Check number of markers with max_strain >= strainmax  
+   numstrainmax = 0  
+   numstrainmax_bylayer = 0  
+   count_bylayer      = 0  
+   sum_strain_bylayer = 0.0d0  
+   max_strain_bylayer = 0.0d0  
 
-!    if ( rankMPI .eq. 1 ) then
-!       write(*,'(a,1i)') '    Number of aggregates that have reached strainmax = ',numstrainmax
-!       write(*,*)
-!    endif
-
-!    IF(numstrainmax == marknum) THEN
-!       Tinit = t
-!       GOTO 90
-!    END IF
-
-!!! Check number of markers with max_strain >= strainmax     
-   numstrainmax = 0    
-   DO m = 1 , marknum    
-      IF(max_strain(m) >= strainmax) numstrainmax = numstrainmax + 1    
+   DO m = 1 , marknum  
+      IF(max_strain(m) >= strainmax) THEN  
+         numstrainmax = numstrainmax + 1  
+         numstrainmax_bylayer(rocktype_at_strainmax(m)) = &  
+            numstrainmax_bylayer(rocktype_at_strainmax(m)) + 1  
+      END IF  
+      count_bylayer(rocktype(m)) = count_bylayer(rocktype(m)) + 1  
+      sum_strain_bylayer(rocktype(m)) = sum_strain_bylayer(rocktype(m)) + max_strain(m)  
+      IF(max_strain(m) > max_strain_bylayer(rocktype(m))) &  
+         max_strain_bylayer(rocktype(m)) = max_strain(m)  
    END DO  
-   
+
+   avg_strain_val_local = SUM(max_strain(1:marknum))
+   max_strain_val_local = MAXVAL(max_strain(1:marknum))
+
+   CALL MPI_Reduce(marknum, marknum_global, 1, &
+                   MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(numstrainmax, numstrainmax_global, 1, &
+                   MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(count_bylayer, count_bylayer_global, 6, &
+                   MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(sum_strain_bylayer, sum_strain_bylayer_global, 6, &
+                   MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(max_strain_bylayer, max_strain_bylayer_global, 6, &
+                   MPI_DOUBLE_PRECISION, MPI_MAX, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(max_strain_val_local, max_strain_val_global, 1, &
+                   MPI_DOUBLE_PRECISION, MPI_MAX, 0, MPI_COMM_WORLD, errMPI)
+   CALL MPI_Reduce(avg_strain_val_local, avg_strain_val_global, 1, &
+                   MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, errMPI)
+
    if ( rankMPI .eq. 1 ) then  
-      write(*,'(a,1i)') '    Number of aggregates that have reached strainmax = ', &  
-                        numstrainmax  
-   
+      write(*,'(a,i0)') '    Number of aggregates that have reached strainmax = ', &  
+                         numstrainmax_global
       write(*,'(a,f6.2,a)') '    Percentage of aggregates at strainmax = ', &  
-                              DBLE(numstrainmax) / DBLE(marknum) * 100.0d0, ' %'  
-   
-      max_strain_val = MAXVAL(max_strain(1:marknum))  
-      avg_strain_val = SUM(max_strain(1:marknum)) / DBLE(marknum)  
-   
-      write(*,'(a,1es13.6)') '    Maximum strain reached = ', max_strain_val  
-      write(*,'(a,1es13.6)') '    Average strain reached = ', avg_strain_val  
+                              DBLE(numstrainmax_global) / DBLE(marknum_global) * 100.0d0, ' %'  
+      write(*,'(a,1es13.6)') '    Maximum strain reached = ', max_strain_val_global
+      write(*,'(a,1es13.6)') '    Average strain reached = ', &
+                              avg_strain_val_global / DBLE(marknum_global)
+      write(*,*)  
+      write(*,'(a)') '    Strain breakdown by layer (all aggregates):'  
+      write(*,'(a,i0,a,1es13.6,a,1es13.6)') &  
+         '    Upper mantle (1):   n=', count_bylayer_global(1), &  
+         '  avg=', sum_strain_bylayer_global(1)/MAX(1,count_bylayer_global(1)), &  
+         '  max=', max_strain_bylayer_global(1)  
+      write(*,'(a,i0,a,1es13.6,a,1es13.6)') &  
+         '    Upper TZ (2):       n=', count_bylayer_global(2), &  
+         '  avg=', sum_strain_bylayer_global(2)/MAX(1,count_bylayer_global(2)), &  
+         '  max=', max_strain_bylayer_global(2)  
+      write(*,'(a,i0,a,1es13.6,a,1es13.6)') &  
+         '    Lower TZ (3):       n=', count_bylayer_global(3), &  
+         '  avg=', sum_strain_bylayer_global(3)/MAX(1,count_bylayer_global(3)), &  
+         '  max=', max_strain_bylayer_global(3)  
+      write(*,'(a,i0,a,1es13.6,a,1es13.6)') &  
+         '    Lower mantle (4):   n=', count_bylayer_global(4), &  
+         '  avg=', sum_strain_bylayer_global(4)/MAX(1,count_bylayer_global(4)), &  
+         '  max=', max_strain_bylayer_global(4)  
       write(*,*)  
    endif
-
-   IF(numstrainmax == marknum) THEN
-      Tinit = t
-      GOTO 90
-   END IF
 
 !!! Advection timestep smaller than timestep input file
    IF(Tinit < Tend .AND. ndt < numdt) THEN
@@ -668,6 +764,8 @@
       write(*,"(a)") '********************************************************'
       write(*,*)
    endif
+
+   DEALLOCATE(rocktype_at_strainmax)
 
    END SUBROUTINE backwardadvectionmain
 

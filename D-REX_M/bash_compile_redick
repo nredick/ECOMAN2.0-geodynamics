@@ -17,7 +17,7 @@ fi
 # h5pfc -O2 -qopenmp -v -o drex_m \
 # h5pfc -g -O0 -traceback -check bounds -warn all *.f90 \
 # h5pfc -g -O0 -qopenmp -traceback -check bounds,uninit,pointer -warn all *.f90 -o drex_m     \
-h5pfc -O0 -qopenmp -o drex_m     \
+h5pfc -O3 -qopenmp -o drex_m     \
     precision.f90        \
     DistComm.f90         \
     DistGrid.F90         \

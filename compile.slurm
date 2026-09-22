@@ -35,6 +35,6 @@ srun bash_compile_redick
 
 ### COMPILE VIZTOMO
 
-cd ../VIZTOMO
+# cd ../VIZTOMO
 
-srun bash_compile_redick
+# srun bash_compile_redick
